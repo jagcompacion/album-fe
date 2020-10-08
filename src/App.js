@@ -1,26 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useContext } from "react";
+import { Container, Row, Col, Card } from "react-bootstrap";
+import Topbar from "./components/Topbar";
+import RemovePhoto from "./components/RemovePhoto";
+import PhotoContext from "./contexts/PhotoContext";
+import axios from "axios";
 
-function App() {
+const App = () => {
+  const { photos, setPhotos } = useContext(PhotoContext);
+
+  const loadPhotos = async () => {
+    const result = await axios.post("http://localhost:8888/photos/list", {
+      skip: 0,
+      limit: 5,
+    });
+    const { documents } = result.data;
+    setPhotos(documents);
+  };
+
+  useEffect(() => {
+    loadPhotos();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Topbar />
+      <Container className="py-5">
+        <Row>
+          {photos.map((photo) => (
+            <Col md="3" key={photo.id}>
+              <Card className="mb-2">
+                <Card.Img variant="top" src={photo.raw} />
+                <Card.Body className="p-2">
+                  <Card.Text className="mb-1">Album: {photo.album}</Card.Text>
+                  <RemovePhoto photo={photo} />
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Container>
+    </>
   );
-}
+};
 
 export default App;
